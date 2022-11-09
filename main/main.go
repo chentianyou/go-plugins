@@ -21,7 +21,8 @@ func main() {
 	routes := route.Routes{}
 	for _, info := range infos {
 		if strings.HasSuffix(info.Name(), ".so") {
-			pluginHandler, err := plugin.Open(path.Join(pluginHome, info.Name()))
+			pluginPath := path.Join(pluginHome, info.Name())
+			pluginHandler, err := plugin.Open(pluginPath)
 			if err != nil {
 				log.Printf("Warning: %v\n", err)
 				continue
@@ -32,7 +33,7 @@ func main() {
 				continue
 			}
 			pluginImpl := pluginSym.(plugins.Plugin)
-			log.Printf("Info: load plugin %s \n", pluginImpl.Name())
+			log.Printf("Info: load plugin [%s] from '%s'\n", pluginImpl.Name(), pluginPath)
 			routes = append(routes, pluginImpl.Routes()...)
 		}
 	}
@@ -44,7 +45,7 @@ func main() {
 			for _, r := range routes {
 				apis = append(apis, "/api/"+r.Pattern)
 			}
-			w.Write([]byte(strings.Join(apis, "\n")+"\n"))
+			w.Write([]byte(strings.Join(apis, "\n") + "\n"))
 		}
 	}))
 	httpServer := &http.Server{
